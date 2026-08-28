@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { applyCors, handlePreflight, sendError } from '../../lib/cors'
-import { getSupabase } from '../../lib/supabase'
-import { parsePostId, parsePostInput } from '../../lib/validate'
+import { applyCors, handlePreflight, sendError } from '../../lib/cors.js'
+import { getSupabase } from '../../lib/supabase.js'
+import { parsePostId, parsePostInput } from '../../lib/validate.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handlePreflight(req, res)) return
