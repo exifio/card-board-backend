@@ -1,31 +1,23 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { applyCors, handlePreflight, sendError } from '../../lib/cors'
 import { getSupabase } from '../../lib/supabase'
-import { parsePostInput } from '../../lib/validate'
+import { parsePostId, parsePostInput } from '../../lib/validate'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handlePreflight(req, res)) return
   applyCors(req, res)
 
+  const id = parsePostId(req.query.id)
+
+  if (!id) {
+    sendError(res, 400, '올바르지 않은 게시글 id입니다.')
+    return
+  }
+
   try {
     const supabase = getSupabase()
 
-    if (req.method === 'GET') {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('id, title, content, created_at, updated_at')
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        sendError(res, 500, '게시글 목록을 불러오지 못했습니다.')
-        return
-      }
-
-      res.status(200).json(data)
-      return
-    }
-
-    if (req.method === 'POST') {
+    if (req.method === 'PUT') {
       const input = parsePostInput(req.body)
 
       if (!input) {
@@ -36,21 +28,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const now = new Date().toISOString()
       const { data, error } = await supabase
         .from('posts')
-        .insert({
+        .update({
           title: input.title,
           content: input.content,
-          created_at: now,
           updated_at: now,
         })
+        .eq('id', id)
         .select('id, title, content, created_at, updated_at')
         .single()
 
-      if (error || !data) {
-        sendError(res, 500, '게시글을 저장하지 못했습니다.')
+      if (error) {
+        sendError(res, 500, '게시글을 수정하지 못했습니다.')
         return
       }
 
-      res.status(201).json(data)
+      if (!data) {
+        sendError(res, 404, '게시글을 찾을 수 없습니다.')
+        return
+      }
+
+      res.status(200).json(data)
+      return
+    }
+
+    if (req.method === 'DELETE') {
+      const { data, error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', id)
+        .select('id')
+        .maybeSingle()
+
+      if (error) {
+        sendError(res, 500, '게시글을 삭제하지 못했습니다.')
+        return
+      }
+
+      if (!data) {
+        sendError(res, 404, '게시글을 찾을 수 없습니다.')
+        return
+      }
+
+      res.status(204).end()
       return
     }
 
