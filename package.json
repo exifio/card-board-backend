@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx dev.ts",
-    "build": "tsc --noEmit"
+    "dev": "tsx dev.ts"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
