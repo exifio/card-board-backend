@@ -44,7 +44,7 @@ npm run dev
 
 프론트엔드 저장소: `card-board-frontend`
 
-연결 가이드: 워크스페이스 `docs/CONNECTION.md` 참고
+연결 가이드: [`CONNECTION.md`](./CONNECTION.md)
 
 프론트 `.env`:
 
